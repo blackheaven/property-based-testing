@@ -18,13 +18,11 @@ main = error "NE"
 -- prop> all (\(i, v) -> (isThird i && isFifth i) || not (contains "FizzBuzz" v)) (indexedFb x)
 fizzbuzz :: Int -> String
 fizzbuzz n = unlines $ map r [1..n]
-  where r i =  if mod i 3 /= 0 && mod i 5 /= 0
-                 then show i
-                 else if mod i 3 == 0 && mod i 5 /= 0
-                 then "Fizz"
-                 else if mod i 3 /= 0 && mod i 5 == 0
-                 then "Buzz"
-                 else "FizzBuzz"
+  where r i =  case (isThird i, isFifth i) of
+                 (True, True)   -> "FizzBuzz"
+                 (True, False)  -> "Fizz"
+                 (False, True)  -> "Buzz"
+                 (False, False) -> show i
 
 -- Helper
 contains :: Eq a => [a] -> [a] -> Bool
