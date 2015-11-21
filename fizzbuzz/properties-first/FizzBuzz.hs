@@ -13,8 +13,12 @@ main = error "NE"
 -- prop> all (\l -> all isDigit l || elem l ["Fizz", "Buzz", "FizzBuzz"]) (lines $ fizzbuzz x)
 -- prop> all (\(i, v) -> if mod i 3 == 0 then contains "Fizz" v else True) (zip [1..x] (lines $ fizzbuzz x))
 -- prop> all (\(i, v) -> if mod i 5 == 0 then contains "Buzz" v else True) (zip [1..x] (lines $ fizzbuzz x))
+-- prop> all (\(i, v) -> if mod i 3 /= 0 && mod i 5 /= 0 then all isDigit v else True) (zip [1..x] (lines $ fizzbuzz x))
 fizzbuzz :: Int -> String
-fizzbuzz n = unlines $ map (const "FizzBuzz") [1..n]
+fizzbuzz n = unlines $ map r [1..n]
+  where r i =  if mod i 3 /= 0 && mod i 5 /= 0
+                 then "0"
+                 else "FizzBuzz"
 
 -- Helper
 contains :: Eq a => [a] -> [a] -> Bool
