@@ -15,10 +15,15 @@ main = error "NE"
 -- prop> all (\(i, v) -> not (isFifth i) || contains "Buzz" v) (indexedFb x)
 -- prop> all (\(i, v) -> (isThird i || isFifth i) || isNumber v) (indexedFb x)
 -- prop> all (\(i, v) -> (isThird i || isFifth i) || show i == v) (indexedFb x)
+-- prop> all (\(i, v) -> (isThird i && isFifth i) || not (contains "FizzBuzz" v)) (indexedFb x)
 fizzbuzz :: Int -> String
 fizzbuzz n = unlines $ map r [1..n]
   where r i =  if mod i 3 /= 0 && mod i 5 /= 0
                  then show i
+                 else if mod i 3 == 0 && mod i 5 /= 0
+                 then "Fizz"
+                 else if mod i 3 /= 0 && mod i 5 == 0
+                 then "Buzz"
                  else "FizzBuzz"
 
 -- Helper
