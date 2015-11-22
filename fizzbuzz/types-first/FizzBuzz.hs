@@ -19,8 +19,9 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 -- FizzBuzz for a given index.
 --
 -- prop> assertIndex x $ \n -> mod x 3 /= 0 || not (isNumber n)
+-- prop> assertIndex x $ \n -> mod x 5 /= 0 || not (isNumber n)
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
-fizzbuzzForIndex xe@(StrictlyPositive x) = if mod x 3 == 0 then Other else Number xe
+fizzbuzzForIndex xe@(StrictlyPositive x) = if mod x 3 == 0 || mod x 5 == 0 then Other else Number xe
 
 -- Helpers
 newtype StrictlyPositive a = StrictlyPositive { getNumber :: a } deriving Eq
