@@ -5,19 +5,25 @@ main = error "NE"
 
 data FizzBuzzResult = Number { extractNumber :: StrictlyPositive Int }
                     | Other
+                    deriving Eq
 
 -- |
 -- FizzBuzz.
 --
 -- prop> assert x $ (== x) . length
--- prop> assertIndexed x $  (all (\(i, n) -> not (isNumber n) || i == getNumber (extractNumber n)))
--- prop> assertIndexed x $  (all (\(i, n) -> mod i 3 /= 0 || not (isNumber n)))
+-- prop> assertIndexed x $ all (\(i, n) -> Just n == fmap fizzbuzzForIndex (mkStrictlyPositive i))
 fizzbuzz :: StrictlyPositive Int -> [FizzBuzzResult]
 fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositive [1..n]
-  where fizzbuzzForIndex xe@(StrictlyPositive x) = if mod x 3 == 0 then Other else Number xe
+
+-- |
+-- FizzBuzz for a given index.
+--
+-- prop> assertIndex x $ \n -> mod x 3 /= 0 || not (isNumber n)
+fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
+fizzbuzzForIndex xe@(StrictlyPositive x) = if mod x 3 == 0 then Other else Number xe
 
 -- Helpers
-newtype StrictlyPositive a = StrictlyPositive { getNumber :: a }
+newtype StrictlyPositive a = StrictlyPositive { getNumber :: a } deriving Eq
 
 mkStrictlyPositive :: (Num a, Ord a) => a -> Maybe (StrictlyPositive a)
 mkStrictlyPositive n = if n > 0 then Just (StrictlyPositive n) else Nothing
@@ -34,3 +40,8 @@ assert n p
 
 assertIndexed :: Int -> ([(Int, FizzBuzzResult)] -> Bool) -> Bool
 assertIndexed n p = assert n (p . zip [1..])
+
+assertIndex :: Int -> (FizzBuzzResult -> Bool) -> Bool
+assertIndex n p
+  | n > 0     = Just True == fmap (p . fizzbuzzForIndex) (mkStrictlyPositive n)
+  | otherwise = True
