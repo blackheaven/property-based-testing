@@ -25,6 +25,7 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 -- prop> assertIndex x $ \n -> notDivisibleBy x 3 || containsFizz n
 -- prop> assertIndex x $ \n -> divisibleBy x 3    || not (containsFizz n)
 -- prop> assertIndex x $ \n -> notDivisibleBy x 5 || containsBuzz n
+-- prop> assertIndex x $ \n -> divisibleBy x 5    || not (containsBuzz n)
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
 fizzbuzzForIndex xe@(StrictlyPositive x)
  | divisibleBy x 15 = FizzBuzz
