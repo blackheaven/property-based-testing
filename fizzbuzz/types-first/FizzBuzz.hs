@@ -1,5 +1,7 @@
 module FizzBuzz where
-import Data.Maybe(mapMaybe)
+import Data.Maybe(mapMaybe, fromJust)
+import Data.Monoid((<>))
+import Control.Applicative((<|>))
 
 main = error "NE"
 
@@ -29,12 +31,27 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 -- prop> assertIndex x (notDivisibleBy x 15) (FizzBuzz ==)
 -- prop> assertIndex x (divisibleBy x 15)    (FizzBuzz /=)
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
-fizzbuzzForIndex xe@(StrictlyPositive x)
- | divisibleBy x 15 = FizzBuzz
- | divisibleBy x  3 = Fizz
- | divisibleBy x  5 = Buzz
- | otherwise = Number xe
- 
+fizzbuzzForIndex x = fromJust ((fizz x <> buzz x) <|> number x)
+
+type Rule = StrictlyPositive Int -> Maybe FizzBuzzResult
+
+fizz :: Rule
+fizz x = if divisibleBy' x 3 then Just Fizz else Nothing
+
+buzz :: Rule
+buzz x = if divisibleBy' x 5 then Just Buzz else Nothing
+
+number :: Rule
+number x = Just $ Number x
+
+
+divisibleBy' :: Integral a => StrictlyPositive a -> a -> Bool
+divisibleBy' (StrictlyPositive a) b = mod a b == 0
+
+instance Monoid FizzBuzzResult where
+    mempty = error "Mempty is not allowed on FizzBuzzResult"
+    mappend Fizz Buzz = FizzBuzz
+
 -- Helpers
 newtype StrictlyPositive a = StrictlyPositive { getNumber :: a } deriving Eq
 
