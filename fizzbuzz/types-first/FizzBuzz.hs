@@ -20,14 +20,14 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 -- |
 -- FizzBuzz for a given index.
 --
--- prop> assertIndex x $ \n -> notDivisibleBy x 3  || not (isNumber n)
--- prop> assertIndex x $ \n -> notDivisibleBy x 5  || not (isNumber n)
--- prop> assertIndex x $ \n -> notDivisibleBy x 3  || containsFizz n
--- prop> assertIndex x $ \n -> divisibleBy x 3     || not (containsFizz n)
--- prop> assertIndex x $ \n -> notDivisibleBy x 5  || containsBuzz n
--- prop> assertIndex x $ \n -> divisibleBy x 5     || not (containsBuzz n)
--- prop> assertIndex x $ \n -> notDivisibleBy x 15 || FizzBuzz == n
--- prop> assertIndex x $ \n -> divisibleBy x 15    || FizzBuzz /= n
+-- prop> assertIndex x (notDivisibleBy x 3)  (not . isNumber)
+-- prop> assertIndex x (notDivisibleBy x 5)  (not . isNumber)
+-- prop> assertIndex x (notDivisibleBy x 3)  containsFizz
+-- prop> assertIndex x (divisibleBy x 3)     (not . containsFizz)
+-- prop> assertIndex x (notDivisibleBy x 5)  containsBuzz
+-- prop> assertIndex x (divisibleBy x 5)     (not . containsBuzz)
+-- prop> assertIndex x (notDivisibleBy x 15) (FizzBuzz ==)
+-- prop> assertIndex x (divisibleBy x 15)    (FizzBuzz /=)
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
 fizzbuzzForIndex xe@(StrictlyPositive x)
  | divisibleBy x 15 = FizzBuzz
@@ -54,9 +54,9 @@ assert n p
 assertIndexed :: Int -> ([(Int, FizzBuzzResult)] -> Bool) -> Bool
 assertIndexed n p = assert n (p . zip [1..])
 
-assertIndex :: Int -> (FizzBuzzResult -> Bool) -> Bool
-assertIndex n p
-  | n > 0     = Just True == fmap (p . fizzbuzzForIndex) (mkStrictlyPositive n)
+assertIndex :: Int -> Bool -> (FizzBuzzResult -> Bool) -> Bool
+assertIndex n p r
+  | n > 0     = p || Just True == fmap (r . fizzbuzzForIndex) (mkStrictlyPositive n)
   | otherwise = True
 
 divisibleBy :: Integral a => a -> a -> Bool
