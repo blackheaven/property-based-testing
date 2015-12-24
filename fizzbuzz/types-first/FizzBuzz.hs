@@ -4,7 +4,7 @@ import Data.Maybe(mapMaybe)
 main = error "NE"
 
 data FizzBuzzResult = Number { extractNumber :: StrictlyPositive Int }
-                    | Other
+                    | FizzBuzz
                     deriving Eq
 
 -- |
@@ -20,8 +20,9 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 --
 -- prop> assertIndex x $ \n -> notDivisibleDy x 3 || not (isNumber n)
 -- prop> assertIndex x $ \n -> notDivisibleDy x 5 || not (isNumber n)
+-- prop> assertIndex x $ \n -> notDivisibleDy x 3 || containsFizz n
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
-fizzbuzzForIndex xe@(StrictlyPositive x) = if divisibleBy x 3 || divisibleBy x 5 then Other else Number xe
+fizzbuzzForIndex xe@(StrictlyPositive x) = if divisibleBy x 3 || divisibleBy x 5 then FizzBuzz else Number xe
 
 -- Helpers
 newtype StrictlyPositive a = StrictlyPositive { getNumber :: a } deriving Eq
@@ -52,3 +53,6 @@ divisibleBy a b = mod a b == 0
 
 notDivisibleDy :: Integral a => a -> a -> Bool
 notDivisibleDy a b = not $ divisibleBy a b
+
+containsFizz :: FizzBuzzResult -> Bool
+containsFizz x = x == FizzBuzz
