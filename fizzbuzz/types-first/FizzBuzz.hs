@@ -4,7 +4,8 @@ import Data.Maybe(mapMaybe)
 main = error "NE"
 
 data FizzBuzzResult = Number { extractNumber :: StrictlyPositive Int }
-                    | FizzBuzz
+                    | Fizz
+                    | Other
                     deriving Eq
 
 -- |
@@ -18,12 +19,16 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 -- |
 -- FizzBuzz for a given index.
 --
--- prop> assertIndex x $ \n -> notDivisibleDy x 3 || not (isNumber n)
--- prop> assertIndex x $ \n -> notDivisibleDy x 5 || not (isNumber n)
--- prop> assertIndex x $ \n -> notDivisibleDy x 3 || containsFizz n
+-- prop> assertIndex x $ \n -> notDivisibleBy x 3 || not (isNumber n)
+-- prop> assertIndex x $ \n -> notDivisibleBy x 5 || not (isNumber n)
+-- prop> assertIndex x $ \n -> notDivisibleBy x 3 || containsFizz n
+-- prop> assertIndex x $ \n -> divisibleBy x 3    || not (containsFizz n)
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
-fizzbuzzForIndex xe@(StrictlyPositive x) = if divisibleBy x 3 || divisibleBy x 5 then FizzBuzz else Number xe
-
+fizzbuzzForIndex xe@(StrictlyPositive x)
+ | divisibleBy x 3 = Fizz
+ | divisibleBy x 5 = Other
+ | otherwise = Number xe
+ 
 -- Helpers
 newtype StrictlyPositive a = StrictlyPositive { getNumber :: a } deriving Eq
 
@@ -51,8 +56,8 @@ assertIndex n p
 divisibleBy :: Integral a => a -> a -> Bool
 divisibleBy a b = mod a b == 0
 
-notDivisibleDy :: Integral a => a -> a -> Bool
-notDivisibleDy a b = not $ divisibleBy a b
+notDivisibleBy :: Integral a => a -> a -> Bool
+notDivisibleBy a b = not $ divisibleBy a b
 
 containsFizz :: FizzBuzzResult -> Bool
-containsFizz x = x == FizzBuzz
+containsFizz x = x == Fizz
