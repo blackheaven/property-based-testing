@@ -5,7 +5,8 @@ main = error "NE"
 
 data FizzBuzzResult = Number { extractNumber :: StrictlyPositive Int }
                     | Fizz
-                    | Other
+                    | Buzz
+                    | FizzBuzz
                     deriving Eq
 
 -- |
@@ -23,10 +24,12 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 -- prop> assertIndex x $ \n -> notDivisibleBy x 5 || not (isNumber n)
 -- prop> assertIndex x $ \n -> notDivisibleBy x 3 || containsFizz n
 -- prop> assertIndex x $ \n -> divisibleBy x 3    || not (containsFizz n)
+-- prop> assertIndex x $ \n -> notDivisibleBy x 5 || containsBuzz n
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
 fizzbuzzForIndex xe@(StrictlyPositive x)
- | divisibleBy x 3 = Fizz
- | divisibleBy x 5 = Other
+ | divisibleBy x 15 = FizzBuzz
+ | divisibleBy x  3 = Fizz
+ | divisibleBy x  5 = Buzz
  | otherwise = Number xe
  
 -- Helpers
@@ -60,4 +63,7 @@ notDivisibleBy :: Integral a => a -> a -> Bool
 notDivisibleBy a b = not $ divisibleBy a b
 
 containsFizz :: FizzBuzzResult -> Bool
-containsFizz x = x == Fizz
+containsFizz x = x == FizzBuzz || x == Fizz
+
+containsBuzz :: FizzBuzzResult -> Bool
+containsBuzz x = x == FizzBuzz || x == Buzz
