@@ -29,22 +29,24 @@ fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
 fizzbuzzForIndex x = fromJust ((fizz x <> buzz x) <|> number x)
 
 type Rule = StrictlyPositive Int -> Maybe FizzBuzzResult
+createRule :: Bool -> FizzBuzzResult -> Maybe FizzBuzzResult
+createRule p v = if p then Just v else Nothing
 
 -- |
 -- prop> x > 0 ==> assertRule (`divisibleBy` 3) fizz x
 fizz :: Rule
-fizz x = if divisibleBy' x 3 then Just Fizz else Nothing
+fizz x = createRule (divisibleBy' x 3) Fizz
 
 -- |
 -- prop> x > 0 ==> assertRule (`divisibleBy` 5) buzz x
 buzz :: Rule
-buzz x = if divisibleBy' x 5 then Just Buzz else Nothing
+buzz x = createRule (divisibleBy' x 5) Buzz
 
 -- |
 -- prop> x > 0 && notDivisibleBy x 5 ==> assertRule (`notDivisibleBy` 3) number x
 -- prop> x > 0 && notDivisibleBy x 3 ==> assertRule (`notDivisibleBy` 5) number x
 number :: Rule
-number x = if not (divisibleBy' x 3) && not (divisibleBy' x 5) then Just $ Number x else Nothing
+number x = createRule (not (divisibleBy' x 3) && not (divisibleBy' x 5)) (Number x)
 
 
 divisibleBy' :: Integral a => StrictlyPositive a -> a -> Bool
