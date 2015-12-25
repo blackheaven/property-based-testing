@@ -1,5 +1,5 @@
 module FizzBuzz where
-import Data.Maybe(mapMaybe, fromJust, isJust)
+import Data.Maybe(mapMaybe, fromJust, isJust, isNothing)
 import Data.Monoid((<>))
 import Control.Applicative((<|>))
 
@@ -41,10 +41,10 @@ buzz :: Rule
 buzz x = if divisibleBy' x 5 then Just Buzz else Nothing
 
 -- |
--- prop> x > 0 ==> assertRule (`notDivisibleBy` 3) number x
--- prop> x > 0 ==> assertRule (`notDivisibleBy` 5) number x
+-- prop> x > 0 && notDivisibleBy x 5 ==> assertRule (`notDivisibleBy` 3) number x
+-- prop> x > 0 && notDivisibleBy x 3 ==> assertRule (`notDivisibleBy` 5) number x
 number :: Rule
-number x = Just $ Number x
+number x = if not (divisibleBy' x 3) && not (divisibleBy' x 5) then Just $ Number x else Nothing
 
 
 divisibleBy' :: Integral a => StrictlyPositive a -> a -> Bool
@@ -79,7 +79,10 @@ assertIndex n p r
   | otherwise = True
 
 assertRule :: (Int -> Bool) -> Rule -> Int -> Bool
-assertRule p r n = not (p n) || isJust (mkStrictlyPositive n >>= r)
+assertRule p r n = if p n
+                     then isJust c
+                     else isNothing c
+                     where c = mkStrictlyPositive n >>= r
 
 divisibleBy :: Integral a => a -> a -> Bool
 divisibleBy a b = mod a b == 0
