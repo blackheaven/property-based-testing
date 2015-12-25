@@ -28,29 +28,30 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
 fizzbuzzForIndex x = fromJust ((fizz x <> buzz x) <|> number x)
 
-type Rule = StrictlyPositive Int -> Maybe FizzBuzzResult
-createRule :: Bool -> FizzBuzzResult -> Maybe FizzBuzzResult
-createRule p v = if p then Just v else Nothing
-
-(=*>) :: Bool -> FizzBuzzResult -> Maybe FizzBuzzResult
-(=*>) = createRule
-infix 2 =*>
+-- Rules
+type FizzBuzzRule = Rule (StrictlyPositive Int) (FizzBuzzResult)
 
 -- |
 -- prop> x > 0 ==> assertRule (`divisibleBy` 3) fizz x
-fizz :: Rule
+fizz :: FizzBuzzRule
 fizz x = divisibleBy' x 3 =*> Fizz
 
 -- |
 -- prop> x > 0 ==> assertRule (`divisibleBy` 5) buzz x
-buzz :: Rule
+buzz :: FizzBuzzRule
 buzz x = divisibleBy' x 5 =*> Buzz
 
 -- |
 -- prop> x > 0 && notDivisibleBy x 5 ==> assertRule (`notDivisibleBy` 3) number x
 -- prop> x > 0 && notDivisibleBy x 3 ==> assertRule (`notDivisibleBy` 5) number x
-number :: Rule
+number :: FizzBuzzRule
 number x = not (divisibleBy' x 3) && not (divisibleBy' x 5) =*> Number x
+
+-- Helpers
+newtype StrictlyPositive a = StrictlyPositive { getNumber :: a } deriving Eq
+
+mkStrictlyPositive :: (Num a, Ord a) => a -> Maybe (StrictlyPositive a)
+mkStrictlyPositive n = if n > 0 then Just (StrictlyPositive n) else Nothing
 
 divisibleBy' :: Integral a => StrictlyPositive a -> a -> Bool
 divisibleBy' (StrictlyPositive a) b = mod a b == 0
@@ -59,12 +60,18 @@ instance Monoid FizzBuzzResult where
     mempty = error "Mempty is not allowed on FizzBuzzResult"
     mappend Fizz Buzz = FizzBuzz
 
--- Helpers
-newtype StrictlyPositive a = StrictlyPositive { getNumber :: a } deriving Eq
+-- Rules system
+type Rule i o = i -> Maybe o
 
-mkStrictlyPositive :: (Num a, Ord a) => a -> Maybe (StrictlyPositive a)
-mkStrictlyPositive n = if n > 0 then Just (StrictlyPositive n) else Nothing
+(=*>) :: Bool -> a -> Maybe a
+(=*>) = wrapMaybe
+infix 2 =*>
 
+-- Rules system helpers
+wrapMaybe :: Bool -> a -> Maybe a
+wrapMaybe p v = if p then Just v else Nothing
+
+-- Test helpers
 isNumber :: FizzBuzzResult -> Bool
 isNumber n = case n of
                (Number _) -> True
@@ -83,7 +90,7 @@ assertIndex n p r
   | n > 0     = p || Just True == fmap (r . fizzbuzzForIndex) (mkStrictlyPositive n)
   | otherwise = True
 
-assertRule :: (Int -> Bool) -> Rule -> Int -> Bool
+assertRule :: (Int -> Bool) -> FizzBuzzRule -> Int -> Bool
 assertRule p r n = if p n
                      then isJust c
                      else isNothing c
