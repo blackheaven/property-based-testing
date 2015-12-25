@@ -1,5 +1,5 @@
 module FizzBuzz where
-import Data.Maybe(mapMaybe, fromJust)
+import Data.Maybe(mapMaybe, fromJust, isJust)
 import Data.Monoid((<>))
 import Control.Applicative((<|>))
 
@@ -22,12 +22,7 @@ fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositi
 -- |
 -- FizzBuzz for a given index.
 --
--- prop> assertIndex x (notDivisibleBy x 3)  (not . isNumber)
--- prop> assertIndex x (notDivisibleBy x 5)  (not . isNumber)
--- prop> assertIndex x (notDivisibleBy x 3)  containsFizz
--- prop> assertIndex x (divisibleBy x 3)     (not . containsFizz)
--- prop> assertIndex x (notDivisibleBy x 5)  containsBuzz
--- prop> assertIndex x (divisibleBy x 5)     (not . containsBuzz)
+-- prop> x > 0 ==> (isJust (fmap fizzbuzzForIndex (mkStrictlyPositive x)))
 -- prop> assertIndex x (notDivisibleBy x 15) (FizzBuzz ==)
 -- prop> assertIndex x (divisibleBy x 15)    (FizzBuzz /=)
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
@@ -35,12 +30,19 @@ fizzbuzzForIndex x = fromJust ((fizz x <> buzz x) <|> number x)
 
 type Rule = StrictlyPositive Int -> Maybe FizzBuzzResult
 
+-- |
+-- prop> x > 0 ==> assertRule (`divisibleBy` 3) fizz x
 fizz :: Rule
 fizz x = if divisibleBy' x 3 then Just Fizz else Nothing
 
+-- |
+-- prop> x > 0 ==> assertRule (`divisibleBy` 5) buzz x
 buzz :: Rule
 buzz x = if divisibleBy' x 5 then Just Buzz else Nothing
 
+-- |
+-- prop> x > 0 ==> assertRule (`notDivisibleBy` 3) number x
+-- prop> x > 0 ==> assertRule (`notDivisibleBy` 5) number x
 number :: Rule
 number x = Just $ Number x
 
@@ -75,6 +77,9 @@ assertIndex :: Int -> Bool -> (FizzBuzzResult -> Bool) -> Bool
 assertIndex n p r
   | n > 0     = p || Just True == fmap (r . fizzbuzzForIndex) (mkStrictlyPositive n)
   | otherwise = True
+
+assertRule :: (Int -> Bool) -> Rule -> Int -> Bool
+assertRule p r n = not (p n) || isJust (mkStrictlyPositive n >>= r)
 
 divisibleBy :: Integral a => a -> a -> Bool
 divisibleBy a b = mod a b == 0
