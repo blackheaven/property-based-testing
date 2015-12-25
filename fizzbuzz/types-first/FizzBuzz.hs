@@ -14,17 +14,18 @@ data FizzBuzzResult = Number { extractNumber :: StrictlyPositive Int }
 -- |
 -- FizzBuzz.
 --
--- prop> assert x $ (== x) . length
--- prop> assertIndexed x $ all (\(i, n) -> Just n == fmap fizzbuzzForIndex (mkStrictlyPositive i))
+-- prop> x > 0 ==> Just True == ((== x) . length . fizzbuzz <$> mkStrictlyPositive x)
 fizzbuzz :: StrictlyPositive Int -> [FizzBuzzResult]
 fizzbuzz (StrictlyPositive n) = map fizzbuzzForIndex $ mapMaybe mkStrictlyPositive [1..n]
 
 -- |
 -- FizzBuzz for a given index.
 --
--- prop> x > 0 ==> (isJust (fmap fizzbuzzForIndex (mkStrictlyPositive x)))
--- prop> assertIndex x (notDivisibleBy x 15) (FizzBuzz ==)
--- prop> assertIndex x (divisibleBy x 15)    (FizzBuzz /=)
+-- prop> x > 0 ==> isJust (fizzbuzzForIndex <$> mkStrictlyPositive x)
+-- prop> x > 0 && notDivisibleBy x 15 ==> Just True == ((FizzBuzz /=) <$> (fmap fizzbuzzForIndex (mkStrictlyPositive x)))
+-- prop> x > 0 ==> Just True == (containsFizz <$> (fmap fizzbuzzForIndex (mkStrictlyPositive (x * 3))))
+-- prop> x > 0 ==> Just True == (containsBuzz <$> (fmap fizzbuzzForIndex (mkStrictlyPositive (x * 5))))
+-- prop> x > 0 ==> Just True == ((FizzBuzz ==) <$> (fmap fizzbuzzForIndex (mkStrictlyPositive (x * 15))))
 fizzbuzzForIndex :: StrictlyPositive Int -> FizzBuzzResult
 fizzbuzzForIndex x = fromJust ((fizz x <> buzz x) <|> number x)
 
@@ -72,24 +73,6 @@ wrapMaybe :: Bool -> a -> Maybe a
 wrapMaybe p v = if p then Just v else Nothing
 
 -- Test helpers
-isNumber :: FizzBuzzResult -> Bool
-isNumber n = case n of
-               (Number _) -> True
-               otherwise  -> False
-
-assert :: Int -> ([FizzBuzzResult] -> Bool) -> Bool
-assert n p
-  | n > 0     = Just True == fmap (p . fizzbuzz) (mkStrictlyPositive n)
-  | otherwise = True
-
-assertIndexed :: Int -> ([(Int, FizzBuzzResult)] -> Bool) -> Bool
-assertIndexed n p = assert n (p . zip [1..])
-
-assertIndex :: Int -> Bool -> (FizzBuzzResult -> Bool) -> Bool
-assertIndex n p r
-  | n > 0     = p || Just True == fmap (r . fizzbuzzForIndex) (mkStrictlyPositive n)
-  | otherwise = True
-
 assertRule :: (Int -> Bool) -> FizzBuzzRule -> Int -> Bool
 assertRule p r n = if p n
                      then isJust c
